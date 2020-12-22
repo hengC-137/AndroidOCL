@@ -12,7 +12,7 @@ LOCAL_MODULE		:= androidOCL_64
 endif
 
 LOCAL_SRC_FILES		:= compute_opencl.cpp \
-					   androidOCL.cpp
+					   execute.cpp
 
 LOCAL_CPP_FEATURES 	:= rtti exceptions
 APP_ALLOW_MISSING_DEPS = true

@@ -16,15 +16,15 @@ CLSymbols &CLSymbols::get()
 
 bool CLSymbols::load_default()
 {
-    //static const std::vector<std::string> libraries{ "libOpenCL.so", "libGLES_mali.so", "libmali.so" };
+    // static const std::vector<std::string> libraries{ "libOpenCL.so", "libGLES_mali.so", "libmali.so" };
 
-#ifdef MALI_LIB_32
-#define MALI_LIB_PATH "/vendor/lib/egl/libGLES_mali.so"
-#else
+#ifdef __aarch64__
 #define MALI_LIB_PATH "/vendor/lib64/egl/libGLES_mali.so"
+#else
+#define MALI_LIB_PATH "/vendor/lib/egl/libGLES_mali.so"
 #endif
 
-    static const std::vector<std::string>
+    // static const std::vector<std::string>
     if(_loaded.first)
     {
         return _loaded.second;
@@ -33,28 +33,41 @@ bool CLSymbols::load_default()
     // Indicate that default loading has been tried
     _loaded.first = true;
 
-    for(const auto &lib : libraries)
-    {
-        if(load(lib))
-        {
-            if (this->clBuildProgram_ptr == null) {
-                LOGE("Failed to load OpenCL symbols from shared library\n");
-            }
-            return true;
+    if (load(MALI_LIB_PATH)){
+        if (this->clBuildProgram_ptr == NULL) {
+                // LOGE("Failed to load OpenCL symbols from shared library\n");
+                std::cout << "Failed to load OpenCL symbols from shared library\n" << std::endl;
         }
+        return true;
     }
 
-    LOGE("Couldn't find any OpenCL library.\n");
+    // for(const auto &lib : libraries)
+    // {
+    //     if(load(lib))
+    //     {
+    //         if (this->clBuildProgram_ptr == NULL) {
+    //             // LOGE("Failed to load OpenCL symbols from shared library\n");
+                
+    //             std::cout << "Failed to load OpenCL symbols from shared library\n" << std::endl;
+    //         }
+    //         return true;
+    //     }
+    // }
+
+    // LOGE("Couldn't find any OpenCL library.\n");
+    std::cout << "Couldn't find any OpenCL library.\n" << std::endl;
     return false;
 }
 
 bool CLSymbols::load(const std::string &library)
 {
+    std::cout << "load lib.so " << library << std::endl;
     void *handle = dlopen(library.c_str(), RTLD_LAZY | RTLD_LOCAL);
 
     if(handle == nullptr)
     {
-        LOGE("Can't load %s : %s \n", library.c_str(), dlerror());
+        // LOGE("Can't load %s : %s \n", library.c_str(), dlerror());
+        std::cout << "Can't load " << library.c_str() << " : " << dlerror() << " \n" << std::endl;
         // Set status of loading to failed
         _loaded.second = false;
         return false;
@@ -142,7 +155,7 @@ bool opencl_is_available()
 //     {
 //         return CL_OUT_OF_RESOURCES;
 //     }
-}
+// }
 
 cl_int clWaitForEvents(cl_uint         num_events,
                        const cl_event *event_list)
