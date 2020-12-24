@@ -29,30 +29,28 @@ void func(){
 
 int main(){
 
-    std::thread t(func);
-    t.join();
+    // std::thread t(func);
+    // t.join();
 
-    // MatrixMulCL* mmcl = new MatrixMulCL();
-    // mmcl->initCL();
-    // mmcl->nativeMatrixMul();
+    MatrixMulCL* mmcl = new MatrixMulCL();
+    mmcl->initCL();
+    mmcl->nativeMatrixMul();
 
 
-    // double onceTime = 0, minTime;
+    double onceTime = 0, minTime;
 
-    // for (size_t lenth = 128; lenth < 4096; lenth += 64)
-    // {
-    //     minTime = SIZE_MAX;
-    //     mmcl->initMatrix(lenth, lenth, lenth);
-    //     for (size_t i = 0; i < 10; i++)
-    //     {
-    //         std::thread t(mmcl->executeKernel, &onceTime);
-    //         t.join();
-    //         // onceTime = mmcl->executeKernel();
-    //         minTime = onceTime < minTime ? onceTime : minTime;
-    //     }
-    //     mmcl->freeMatrix();
-    //     printf("lenth = %d  best cost time %lf \n", lenth, minTime);
-    // }
+    for (size_t lenth = 128; lenth < 2049; lenth += 64)
+    {
+        minTime = SIZE_MAX;
+        mmcl->initMatrix(lenth, lenth, lenth);
+        for (size_t i = 0; i < 10; i++)
+        {
+            onceTime = mmcl->executeKernel();
+            minTime = onceTime < minTime ? onceTime : minTime;
+        }
+        mmcl->freeMatrix();
+        printf("lenth = %d  best cost time %lf \n", lenth, minTime);
+    }
 
     
  

@@ -194,7 +194,8 @@ double MatrixMulCL::executeKernel(){
     Amem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, (M * K) * sizeof(float), A, &status);
     Bmem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, (K * N) * sizeof(float), B, &status);
     Cmem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, (K * K) * sizeof(float), NULL, &status);
-    size_t globalRange[2] = {LENTH, LENTH};
+    
+    size_t globalRange[2] = {(size_t)M, (size_t)N};
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
