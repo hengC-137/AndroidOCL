@@ -183,6 +183,7 @@ void MatrixMulCL::initMatrix(int M_, int N_, int K_){
     std::cout << "finish init matrix" << std::endl;
 }
 
+
 double MatrixMulCL::executeKernel(){
     struct timespec start, end;
     
@@ -215,6 +216,10 @@ double MatrixMulCL::executeKernel(){
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
+    
+    status = clReleaseMemObject(Amem);
+    status = clReleaseMemObject(Bmem);
+    status = clReleaseMemObject(Cmem);
     return get_time(&start, &end);
     // return 0;
 
@@ -270,9 +275,6 @@ void MatrixMulCL::freeMatrix(){
 void MatrixMulCL::releaseMatrixMulCL(){
     status = clReleaseKernel(kernel);
     status = clReleaseProgram(program);
-    status = clReleaseMemObject(Amem);
-    status = clReleaseMemObject(Bmem);
-    status = clReleaseMemObject(Cmem);
     status = clReleaseCommandQueue(commandQueue);
     status = clReleaseContext(context);
 }

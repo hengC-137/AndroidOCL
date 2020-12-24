@@ -12,6 +12,7 @@ void func(){
     {
         minTime = SIZE_MAX;
         mmcl->initMatrix(lenth, lenth, lenth);
+        mmcl->prepareMem();
         for (size_t i = 0; i < 10; i++)
         {
             onceTime = mmcl->executeKernel();
@@ -39,7 +40,7 @@ int main(){
 
     double onceTime = 0, minTime;
 
-    for (size_t lenth = 128; lenth < 2049; lenth += 64)
+    for (size_t lenth = 128; lenth < 5000; lenth += 64)
     {
         minTime = SIZE_MAX;
         mmcl->initMatrix(lenth, lenth, lenth);

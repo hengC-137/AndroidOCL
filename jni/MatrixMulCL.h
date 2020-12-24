@@ -18,6 +18,7 @@ public:
     void initMatrix(int, int, int);
     double nativeMatrixMul(); 
     double executeKernel(); 
+    void prepareMem(); 
     void campareResult();
     void releaseMatrixMulCL();
     void freeMatrix();
