@@ -15,9 +15,7 @@ void func(){
         mmcl->prepareMem();
         for (size_t i = 0; i < 10; i++)
         {
-            onceTime = mmcl->executeKernel();
-            // onceTime = mmcl->executeKernel();
-            minTime = onceTime < minTime ? onceTime : minTime;
+            mmcl->executeKernel2();
         }
         mmcl->freeMatrix();
         printf("lenth = %d  best cost time %lf \n", lenth, minTime);
@@ -35,25 +33,25 @@ int main(){
 
     MatrixMulCL* mmcl = new MatrixMulCL();
     mmcl->initCL();
-    mmcl->nativeMatrixMul();
+    // mmcl->nativeMatrixMul();
 
 
-    double onceTime = 0, minTime;
+    // double onceTime = 0, minTime;
 
-    for (size_t lenth = 128; lenth < 5000; lenth += 64)
-    {
-        minTime = SIZE_MAX;
-        mmcl->initMatrix(lenth, lenth, lenth);
-        for (size_t i = 0; i < 10; i++)
-        {
-            onceTime = mmcl->executeKernel();
-            minTime = onceTime < minTime ? onceTime : minTime;
-        }
-        mmcl->freeMatrix();
-        printf("lenth = %d  best cost time %lf \n", lenth, minTime);
-    }
+    // for (size_t lenth = 128; lenth < 2049; lenth += 64)
+    // {
+    //     minTime = SIZE_MAX;
+    //     mmcl->initMatrix(lenth, lenth, lenth);
+    //     for (size_t i = 0; i < 10; i++)
+    //     {
+    //         onceTime = mmcl->test();
+    //         minTime = onceTime < minTime ? onceTime : minTime;
+    //     }
+    //     mmcl->freeMatrix();
+    //     std::cout << "lenth = " << lenth << " best cost time " << minTime << std::endl;
+    // }
 
-    
+    mmcl->executeKernel2();
  
 
 

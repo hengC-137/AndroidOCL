@@ -17,7 +17,14 @@ public:
     void initCL();
     void initMatrix(int, int, int);
     double nativeMatrixMul(); 
-    double executeKernel(); 
+
+    void executeKernel1(); 
+    void executeKernel2(); 
+
+    double test();
+
+    // void testAllocPtr();
+
     void prepareMem(); 
     void campareResult();
     void releaseMatrixMulCL();

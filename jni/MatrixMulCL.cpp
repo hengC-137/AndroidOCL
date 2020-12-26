@@ -1,6 +1,8 @@
 #include "MatrixMulCL.h"
 
 void initMat(float* mat, size_t matSize, int mode){
+    // std::cout << "init mat" << std::endl;
+    float t;
     for (size_t i = 0; i < matSize; i++){
         switch (mode)
         {
@@ -10,9 +12,9 @@ void initMat(float* mat, size_t matSize, int mode){
         case 1:
             mat[i] = 0.1f;
             break;
-        case 2: 
+        case 2:
             mat[i] = ((rand() / float(RAND_MAX)) - 0.5) * 10;
-            // mat[i] = i;
+            // std::cout << "t = " << t << std::endl;
             break;
         default:
             break;
@@ -155,10 +157,10 @@ void MatrixMulCL::initMatrix(int M_, int N_, int K_){
     C = (float*) malloc (sizeof(float) * (K *K));
     C_gold = (float*) malloc (sizeof(float) * (K *K));
     
-    initMat(A, M*K, 2);
-    initMat(B, N*K, 2);
-    initMat(C, K*K, 0);
-    initMat(C_gold, M*N, 0);
+    // initMat(A, M*K, 2);
+    // initMat(B, N*K, 2);
+    // initMat(C, K*K, 0);
+    // initMat(C_gold, M*N, 0);
 
     // std::cout << "A :" << std::endl;
     // for (size_t i = 0; i < M; i++)
@@ -180,50 +182,9 @@ void MatrixMulCL::initMatrix(int M_, int N_, int K_){
     //     std::cout << std::endl;
     // }
 
-    std::cout << "finish init matrix" << std::endl;
+    // std::cout << "finish init matrix" << std::endl;
 }
 
-
-double MatrixMulCL::executeKernel(){
-    struct timespec start, end;
-    
-    kernel = clCreateKernel(program, "myGEMM", &status);
-    if (status != CL_SUCCESS)
-    {
-        std::cout << "Error: Create kernel failed! error code : " << status << std::endl;
-    }
-    Amem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, (M * K) * sizeof(float), A, &status);
-    Bmem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, (K * N) * sizeof(float), B, &status);
-    Cmem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, (K * K) * sizeof(float), NULL, &status);
-    
-    size_t globalRange[2] = {(size_t)M, (size_t)N};
-
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-
-    status = clSetKernelArg(kernel, 0, sizeof(int), (void*)&M);
-    status |= clSetKernelArg(kernel, 1, sizeof(int), (void*)&N);
-    status |= clSetKernelArg(kernel, 2, sizeof(int), (void*)&K);
-    status |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void*)&Amem);
-    status |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*)&Bmem);
-    status |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void*)&Cmem);
-
-    cl_event eventPoint;
-    status |= clEnqueueNDRangeKernel(commandQueue, kernel, 2, NULL, globalRange, NULL, 0, NULL, &eventPoint);
-    clWaitForEvents(1, &eventPoint);
-    clReleaseEvent(eventPoint);
-    status |= clEnqueueReadBuffer(commandQueue, Cmem, CL_TRUE, 0, K * K * sizeof(float), C, 0, NULL, NULL);
-
-
-    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-
-    
-    status = clReleaseMemObject(Amem);
-    status = clReleaseMemObject(Bmem);
-    status = clReleaseMemObject(Cmem);
-    return get_time(&start, &end);
-    // return 0;
-
-}
 
 double MatrixMulCL::nativeMatrixMul(){
 
@@ -278,3 +239,236 @@ void MatrixMulCL::releaseMatrixMulCL(){
     status = clReleaseCommandQueue(commandQueue);
     status = clReleaseContext(context);
 }
+
+double MatrixMulCL::test(){
+    struct timespec start, end;
+    
+    kernel = clCreateKernel(program, "myGEMM", &status);
+    if (status != CL_SUCCESS)
+    {
+        std::cout << "Error: Create kernel failed! error code : " << status << std::endl;
+    }
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+
+    Amem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, (M * K) * sizeof(float), A, &status);
+    Bmem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, (K * N) * sizeof(float), B, &status);
+    Cmem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, (K * K) * sizeof(float), NULL, &status);
+    
+    size_t globalRange[2] = {(size_t)M, (size_t)N};
+
+    status = clSetKernelArg(kernel, 0, sizeof(int), (void*)&M);
+    status |= clSetKernelArg(kernel, 1, sizeof(int), (void*)&N);
+    status |= clSetKernelArg(kernel, 2, sizeof(int), (void*)&K);
+    status |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void*)&Amem);
+    status |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*)&Bmem);
+    status |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void*)&Cmem);
+
+    cl_event eventPoint;
+    status |= clEnqueueNDRangeKernel(commandQueue, kernel, 2, NULL, globalRange, NULL, 0, NULL, &eventPoint);
+    clWaitForEvents(1, &eventPoint);
+    clReleaseEvent(eventPoint);
+    status |= clEnqueueReadBuffer(commandQueue, Cmem, CL_TRUE, 0, K * K * sizeof(float), C, 0, NULL, NULL);
+
+
+    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+
+    
+    status = clReleaseMemObject(Amem);
+    status = clReleaseMemObject(Bmem);
+    status = clReleaseMemObject(Cmem);
+    return get_time(&start, &end);
+    // return 0;
+
+}
+
+void MatrixMulCL::executeKernel1(){
+    kernel = clCreateKernel(program, "myGEMM", &status);
+    if (status != CL_SUCCESS)
+    {
+        std::cout << "Error: Create kernel failed! error code : " << status << std::endl;
+    }
+
+    struct timespec start, end;
+
+    // for (size_t i = 64; i < 1024; i+=64)
+    for (size_t i = 128; i < 2049; i+=64)
+    {   
+        // std::cout << "i = " << i << std::endl;
+        K = i; N = i; M = i;
+        double costTime = 0, minTime = DBL_DIG;
+
+        A = (float*) malloc (sizeof(float) * (M *K));
+        B = (float*) malloc (sizeof(float) * (N *K));
+        C = (float*) malloc (sizeof(float) * (M * N));
+        initMat(C, M * N, 0);
+        // C_gold = (float*) malloc (sizeof(float) * (M * N));
+
+        Cmem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, (K * K) * sizeof(float), NULL, &status);
+        if (status != CL_SUCCESS) { std::cout << "create Cmem failed" << std::endl; }
+
+        for (size_t j = 0; j < 10; j++)
+        {
+            // std::cout << "j = " << j << std::endl;
+
+
+            initMat(A, M * K, 2);
+            initMat(B, N * K, 2);
+
+            clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+            Amem = clCreateBuffer(context,  CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 
+                                    sizeof(float) * (M * K), A, &status);
+            if (status != CL_SUCCESS) { std::cout << "create Amem failed" << std::endl; }
+            Bmem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 
+                                    sizeof(float) * (N * K), B, &status);
+            if (status != CL_SUCCESS) { std::cout << "create Bmem failed" << std::endl; }
+
+            size_t globalRange[2] = {(size_t)M, (size_t)N};
+            status = clSetKernelArg(kernel, 0, sizeof(int), (void*)&M);
+            status |= clSetKernelArg(kernel, 1, sizeof(int), (void*)&N);
+            status |= clSetKernelArg(kernel, 2, sizeof(int), (void*)&K);
+            status |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void*)&Amem);
+            status |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*)&Bmem);
+            status |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void*)&Cmem);
+            // std::cout << "enqueue NDRange Kernel " << std::endl;
+            cl_event eventPoint;
+            status |= clEnqueueNDRangeKernel(commandQueue, kernel, 2, NULL, globalRange, NULL, 0, NULL, &eventPoint);
+            clWaitForEvents(1, &eventPoint);
+            clReleaseEvent(eventPoint);
+            status |= clEnqueueReadBuffer(commandQueue, Cmem, CL_TRUE, 0, K * K * sizeof(float), C, 0, NULL, NULL);
+
+            clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+
+            costTime = get_time(&start, &end);
+            minTime = costTime < minTime ? costTime : minTime;
+        }
+        std::cout << "lenth = " << i << " best cost time " << minTime << std::endl;
+        // printf("lenth = %d  best cost time %lf \n", i, minTime);
+        status = clReleaseMemObject(Amem);
+        status = clReleaseMemObject(Bmem);
+        status = clReleaseMemObject(Cmem);  
+        free(A);
+        free(B);
+        free(C);
+    }
+}
+
+void MatrixMulCL::executeKernel2(){
+
+    kernel = clCreateKernel(program, "myGEMM", &status);
+    if (status != CL_SUCCESS)
+    {
+        std::cout << "Error: Create kernel failed! error code : " << status << std::endl;
+    }
+
+    struct timespec start, end;
+
+    // for (size_t i = 64; i < 1024; i+=64)
+    for (size_t i = 128; i < 2049; i+=64)
+    {   
+        // std::cout << "i = " << i << std::endl;
+        K = i; N = i; M = i;
+        double costTime = 0, minTime = DBL_DIG;
+
+        // A = (float*) malloc (sizeof(float) * (M *K));
+        // B = (float*) malloc (sizeof(float) * (N *K));
+        C = (float*) malloc (sizeof(float) * (M * N));
+        // C_gold = (float*) malloc (sizeof(float) * (M * N));
+
+        Amem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
+                              sizeof(float) * (M * K), NULL, &status);
+        if (status != CL_SUCCESS) { std::cout << "create Amem failed" << std::endl; }
+        Bmem = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
+                              sizeof(float) * (N * K), NULL, &status);
+        if (status != CL_SUCCESS) { std::cout << "create Bmem failed" << std::endl; }
+        Cmem = clCreateBuffer(context, CL_MEM_WRITE_ONLY, (K * K) * sizeof(float), NULL, &status);
+        if (status != CL_SUCCESS) { std::cout << "create Cmem failed" << std::endl; }
+
+        for (size_t j = 0; j < 3; j++)
+        {
+            // std::cout << "j = " << j << std::endl;
+
+
+            cl_float* testA = (cl_float *)clEnqueueMapBuffer(commandQueue, Amem, CL_TRUE, CL_MAP_WRITE, 0, 
+                                            sizeof(float) * (M * K), 0, NULL, NULL, &status);
+            if (status != CL_SUCCESS) { std::cout << "map Amem failed" << std::endl; }
+            cl_float* testB = (cl_float *)clEnqueueMapBuffer(commandQueue, Bmem, CL_TRUE, CL_MAP_WRITE, 0, 
+                                            sizeof(float) * (N * K), 0, NULL, NULL, &status);
+            if (status != CL_SUCCESS) { std::cout << "map Bmem failed" << std::endl; }
+
+            std::cout << "A " << (void*) testA << std::endl;
+
+            clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+            initMat(testA, M * K, 2);
+            initMat(testB, N * K, 2);
+            
+            clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+
+            status = clEnqueueUnmapMemObject(commandQueue, Amem, testA, 0, NULL, NULL);
+            status |= clEnqueueUnmapMemObject(commandQueue, Bmem, testB, 0, NULL, NULL);
+            if (status != CL_SUCCESS) { std::cout << "unmap buffer failed" << std::endl; }
+
+            size_t globalRange[2] = {(size_t)M, (size_t)N};
+            status = clSetKernelArg(kernel, 0, sizeof(int), (void*)&M);
+            status |= clSetKernelArg(kernel, 1, sizeof(int), (void*)&N);
+            status |= clSetKernelArg(kernel, 2, sizeof(int), (void*)&K);
+            status |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void*)&Amem);
+            status |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*)&Bmem);
+            status |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void*)&Cmem);
+            // std::cout << "enqueue NDRange Kernel " << std::endl;
+            cl_event eventPoint;
+            status |= clEnqueueNDRangeKernel(commandQueue, kernel, 2, NULL, globalRange, NULL, 0, NULL, &eventPoint);
+            clWaitForEvents(1, &eventPoint);
+            clReleaseEvent(eventPoint);
+            status |= clEnqueueReadBuffer(commandQueue, Cmem, CL_TRUE, 0, K * K * sizeof(float), C, 0, NULL, NULL);
+
+
+            costTime = get_time(&start, &end);
+            minTime = costTime < minTime ? costTime : minTime;
+        }
+        std::cout << "lenth = " << i << " best cost time " << minTime << std::endl;
+        // printf("lenth = %d  best cost time %lf \n", i, minTime);
+        status = clReleaseMemObject(Amem);
+        status = clReleaseMemObject(Bmem);
+        status = clReleaseMemObject(Cmem);  
+        free(C);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

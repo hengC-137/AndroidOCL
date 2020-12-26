@@ -17,7 +17,7 @@ __kernel void myGEMM(const int M, const int N, const int K, const __global float
         // printf("temp = %f \n", temp);
         // acc += temp;
         // printf("acc = %f \n", acc);
-        // acc += (A[globalRow * K + k] * B[k * N + globalCol]);
+        acc += (A[globalRow * K + k] * B[k * N + globalCol]);
     }
     C[globalRow * K + globalCol] = acc;
 }
