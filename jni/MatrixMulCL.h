@@ -23,7 +23,10 @@ public:
     void executeKernel3();      // 1x4 以M作为主序
     void executeKernel4();      // 1x4 以N作为主序 （相邻线程在B上是连续的
     void executeKernel5();      // 4x4 
-
+    void executeKernel6();      // 4x4 将A每4行的同一列元素排成相邻
+    void executeKernel7();      // 4x4 将B每行的16个元素排成一排
+    void executeKernel8();      // 4x4 指针换成累加
+    
     double test();
 
     // void testAllocPtr();

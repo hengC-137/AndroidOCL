@@ -53,7 +53,11 @@ int main(){
 
     // mmcl->executeKernel2();
     // mmcl->executeKernel3();
-    mmcl->executeKernel4();
+    // mmcl->executeKernel4();
+    // mmcl->executeKernel5();
+    // mmcl->executeKernel6();
+    // mmcl->executeKernel7();
+    mmcl->executeKernel8();
  
 
 
