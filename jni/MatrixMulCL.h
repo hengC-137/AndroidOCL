@@ -20,6 +20,8 @@ public:
 
     void executeKernel1(); 
     void executeKernel2(); 
+    void executeKernel3();
+    void executeKernel4();
 
     double test();
 

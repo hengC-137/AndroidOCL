@@ -51,7 +51,9 @@ int main(){
     //     std::cout << "lenth = " << lenth << " best cost time " << minTime << std::endl;
     // }
 
-    mmcl->executeKernel2();
+    // mmcl->executeKernel2();
+    // mmcl->executeKernel3();
+    mmcl->executeKernel4();
  
 
 
