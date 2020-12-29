@@ -18,10 +18,11 @@ public:
     void initMatrix(int, int, int);
     double nativeMatrixMul(); 
 
-    void executeKernel1(); 
-    void executeKernel2(); 
-    void executeKernel3();
-    void executeKernel4();
+    void executeKernel1();      // 使用 CL_MEM_COPY_HOST_PTR
+    void executeKernel2();      // 使用 CL_MEM_ALLOC_HOST_PTR
+    void executeKernel3();      // 1x4 以M作为主序
+    void executeKernel4();      // 1x4 以N作为主序 （相邻线程在B上是连续的
+    void executeKernel5();      // 4x4 
 
     double test();
 
