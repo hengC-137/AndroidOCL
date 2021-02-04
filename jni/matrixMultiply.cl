@@ -293,3 +293,94 @@ __kernel void myGEMM7(const int M, const int N, const int K, const __global floa
     vstore4(acc3, 0, &C[(globalRow * 4 + 3) * N + globalCol * 4]);
 }
 
+__kernel void myGEMM7(const int M, const int N, const int K, const __global float* A,
+                      const __global float* B, __global float* C) {
+    const int globalRow = get_global_id(1);
+    const int globalCol = get_global_id(0);
+
+    const int localCol = get_local_id(0);
+
+    float4 av = {0.0f, 0.0f, 0.0f, 0.0f};
+    float4 bv = {0.0f, 0.0f, 0.0f, 0.0f};
+
+    float4 acc0 = {0.0f, 0.0f, 0.0f, 0.0f};
+    float4 acc1 = {0.0f, 0.0f, 0.0f, 0.0f};
+    float4 acc2 = {0.0f, 0.0f, 0.0f, 0.0f};
+    float4 acc3 = {0.0f, 0.0f, 0.0f, 0.0f};
+    for (int k = 0; k < K; k++){
+        av = vload4(0, &A[globalRow * 4 * K + 4 * k]);
+        bv = vload4(0, &B[globalCol * 16 + localCol * 4 + k * N]);
+
+        acc0.x += av.x * bv.x;
+        acc0.y += av.x * bv.y;
+        acc0.z += av.x * bv.z;
+        acc0.w += av.x * bv.w;
+        
+        acc1.x += av.y * bv.x;
+        acc1.y += av.y * bv.y;
+        acc1.z += av.y * bv.z;
+        acc1.w += av.y * bv.w;
+        
+        acc2.x += av.z * bv.x;
+        acc2.y += av.z * bv.y;
+        acc2.z += av.z * bv.z;
+        acc2.w += av.z * bv.w;
+        
+        acc3.x += av.w * bv.x;
+        acc3.y += av.w * bv.y;
+        acc3.z += av.w * bv.z;
+        acc3.w += av.w * bv.w;
+    }
+
+    vstore4(acc0, 0, &C[globalRow * N * 4 + globalCol * 16 + localCol * 4]);
+    vstore4(acc1, 0, &C[(globalRow * 4 + 1) * N + globalCol * 16 + localCol * 4]);
+    vstore4(acc2, 0, &C[(globalRow * 4 + 2) * N + globalCol * 16 + localCol * 4]);
+    vstore4(acc3, 0, &C[(globalRow * 4 + 3) * N + globalCol * 16 + localCol * 4]);
+}
+
+__kernel void myGEMM8(const int M, const int N, const int K, const __global float* A,
+                      const __global float* B, __global float* C) {
+    const int globalCol = get_global_id(0);
+    const int globalRow = get_global_id(1);
+
+    const int localCol = get_local_id(0);
+    const int localRow = get_local_id(1);
+
+    float4 av = {0.0f, 0.0f, 0.0f, 0.0f};
+    float4 bv = {0.0f, 0.0f, 0.0f, 0.0f};
+
+    float4 acc0 = {0.0f, 0.0f, 0.0f, 0.0f};
+    float4 acc1 = {0.0f, 0.0f, 0.0f, 0.0f};
+    float4 acc2 = {0.0f, 0.0f, 0.0f, 0.0f};
+    float4 acc3 = {0.0f, 0.0f, 0.0f, 0.0f};
+    for (int k = 0; k < K; k++){
+        av = vload4(0, &A[globalRow * 16 * K + localRow * 4 * K + 4 * k]);
+        bv = vload4(0, &B[globalCol * 16 + localCol * 4 + k * N]);
+
+        acc0.x += av.x * bv.x;
+        acc0.y += av.x * bv.y;
+        acc0.z += av.x * bv.z;
+        acc0.w += av.x * bv.w;
+        
+        acc1.x += av.y * bv.x;
+        acc1.y += av.y * bv.y;
+        acc1.z += av.y * bv.z;
+        acc1.w += av.y * bv.w;
+        
+        acc2.x += av.z * bv.x;
+        acc2.y += av.z * bv.y;
+        acc2.z += av.z * bv.z;
+        acc2.w += av.z * bv.w;
+        
+        acc3.x += av.w * bv.x;
+        acc3.y += av.w * bv.y;
+        acc3.z += av.w * bv.z;
+        acc3.w += av.w * bv.w;
+    }
+
+    vstore4(acc0, 0, &C[(globalRow * 16 + localRow * 4) * N + globalCol * 16 + localCol * 4]);
+    vstore4(acc1, 0, &C[(globalRow * 16 + localRow * 4 + 1) * N + globalCol * 16 + localCol * 4]);
+    vstore4(acc2, 0, &C[(globalRow * 16 + localRow * 4 + 2) * N + globalCol * 16 + localCol * 4]);
+    vstore4(acc3, 0, &C[(globalRow * 16 + localRow * 4 + 3) * N + globalCol * 16 + localCol * 4]);
+}
+
